@@ -1,0 +1,147 @@
+.app {
+  min-height: 100dvh;
+}
+
+.barra-lateral {
+  display: none;
+}
+
+.cabecera-movil {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borde);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 700;
+}
+
+.marca__logo {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  color: #fff;
+  background: var(--marca);
+}
+
+.marca__texto small {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--texto-suave);
+}
+
+.principal {
+  padding: 1.25rem 1rem 6.5rem;
+  max-width: 72rem;
+  margin: 0 auto;
+}
+
+.pagina {
+  display: grid;
+  gap: 1.25rem;
+  animation: entrar 280ms ease-out both;
+}
+
+.nav-inferior {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom));
+  background: var(--superficie);
+  border-top: 1px solid var(--borde);
+}
+
+.enlace-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-height: 3.5rem;
+  border-radius: var(--radio-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+  transition:
+    color var(--transicion),
+    background var(--transicion),
+    transform var(--transicion);
+}
+
+.enlace-nav:active {
+  transform: scale(0.94);
+}
+
+.enlace-nav.activo {
+  color: var(--marca-fuerte);
+  background: var(--marca-suave);
+}
+
+@media (min-width: 768px) {
+  .app {
+    display: grid;
+    grid-template-columns: 16rem 1fr;
+  }
+
+  .cabecera-movil,
+  .nav-inferior {
+    display: none;
+  }
+
+  .barra-lateral {
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem 1rem;
+    background: var(--superficie);
+    border-right: 1px solid var(--borde);
+  }
+
+  .barra-lateral nav {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .barra-lateral .enlace-nav {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.75rem;
+    min-height: var(--tactil);
+    padding: 0 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .barra-lateral .enlace-nav:hover {
+    background: var(--fondo);
+  }
+
+  .barra-lateral .enlace-nav.activo {
+    background: var(--marca-suave);
+  }
+
+  .principal {
+    padding: 2rem 2rem 3rem;
+  }
+}
+
+/* "Importar" solo en la barra lateral: en móvil se accede desde Productos */
+.nav-inferior .enlace-nav--escritorio {
+  display: none;
+}

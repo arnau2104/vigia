@@ -1,0 +1,29 @@
+/* Único sitio donde se definen colores, tipografía y medidas */
+:root {
+  --fuente: 'Inter Variable', system-ui, sans-serif;
+
+  --fondo: #f6f7f9;
+  --superficie: #ffffff;
+  --borde: #d9dee5;
+  --texto: #14202b;
+  --texto-suave: #51606f;
+
+  --marca: #0f766e;
+  --marca-fuerte: #115e59;
+  --marca-suave: #e0f2f0;
+
+  --caducado: #b42318;
+  --caducado-fondo: #fdecea;
+  --hoy: #c2410c;
+  --hoy-fondo: #ffedd5;
+  --proximo: #8a5a00;
+  --proximo-fondo: #fef3c7;
+  --correcto: #18794e;
+  --correcto-fondo: #e3f5ea;
+
+  --radio: 14px;
+  --radio-sm: 10px;
+  --sombra: 0 1px 2px rgb(20 32 43 / 0.06), 0 4px 14px rgb(20 32 43 / 0.05);
+  --tactil: 3rem;
+  --transicion: 160ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
