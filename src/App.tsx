@@ -14,7 +14,8 @@ export default function App() {
         <Route index element={<InicioPage />} />
         <Route path="registrar" element={<RegistrarLotePage />} />
         <Route path="categorias" element={<CategoriasPage />} />
-        <Route path="categorias/:id" element={<CategoriaDetallePage />} />
+        <Route path="categorias/editar/:categoria_id" element={<CategoriasPage />} />
+        <Route path="categoria/:categoria_id" element={<CategoriaDetallePage />} />
         <Route path="productos" element={<ProductosPage />} />
         <Route path="importar" element={<ImportarProductosPage />} />
       </Route>

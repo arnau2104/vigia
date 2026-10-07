@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect,useRef } from 'react'
 import { AlarmClock, Clock, OctagonAlert } from 'lucide-react'
 import CabeceraPagina from '../components/CabeceraPagina'
 import LoteTarjeta from '../components/LoteTarjeta'
@@ -8,6 +8,8 @@ import type { Categoria } from '../types/categoria'
 import type { Producto } from '../types/producto'
 import { tipoAviso } from '../utils/tipoAviso'
 import { retirarLote } from '../utils/retirarLote'
+import { deshacerRetirar } from '../utils/deshacerRetirar'
+
 
 // import { lotesMuestra } from '../data/muestra'
 const contadores = [
@@ -17,15 +19,17 @@ const contadores = [
 ] as const
 
 export default function InicioPage() {
-  const [retirados, setRetirados] = useState<string[]>([])
+  // const [retirados, setRetirados] = useState<string[]>([])
   // const [urgentes, setUrgentes] = useState<LoteView[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [lotes, setLotes] = useState<LoteView[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
+
+  const temporizadores = useRef<Record<number, ReturnType<typeof setTimeout>>>({})
   // const [avisos, setAvisos] = useState<LoteView[]>([]);
 
   // Datos derivados: se recalculan solos cada vez que cambia `lotes`
-  const avisos = lotes.filter(l => l.estado === 1 && tipoAviso(l) !== 'correcto')
+  const avisos = lotes.filter(l => l.activo === 1 && tipoAviso(l) !== 'correcto')
   const urgentes = avisos.filter(l => ['caducado', 'hoy'].includes(tipoAviso(l)))
 
   useEffect(() => {
@@ -33,7 +37,7 @@ export default function InicioPage() {
   }, []);
 
 //  useEffect(() => {
-//   const conAviso = lotes.filter(l => l.estado === 1 && tipoAviso(l) !== 'correcto')
+//   const conAviso = lotes.filter(l => l.activo === 1 && tipoAviso(l) !== 'correcto')
 //   const urgentesLotes = conAviso.filter(l => ['caducado', 'hoy'].includes(tipoAviso(l)))
 //   setAvisos(conAviso)
 //   setUrgentes(urgentesLotes)
@@ -65,13 +69,30 @@ export default function InicioPage() {
   const retirarLoteHandler = async (lote_id: number) => {
     const retiradoOk = await retirarLote(lote_id);
     if (retiradoOk) {
-      setTimeout(() => {
+      temporizadores.current[lote_id] = setTimeout(() => {
         setLotes(ls => ls.filter(lote => lote.lote_id !== lote_id));
       }, 2600);
     } else {
       console.error('Error al retirar el lote con ID:', lote_id);
     }
     return retiradoOk;
+  };
+
+  const deshacerRetirarHandler = async (lote_id: number) => {
+      clearTimeout(temporizadores.current[lote_id]);   // la tarjeta ya no se borrará
+      const deshacerOk = await deshacerRetirar(lote_id);
+      const loterestaurado = deshacerOk?.lote;
+
+      if (deshacerOk.ok && loterestaurado) {
+        // Aquí puedes actualizar el estado de los lotes si es necesario
+        console.log('Se ha deshecho el retiro del lote con ID:', lote_id);
+        setTimeout(() => {
+          setLotes(ls =>[...ls, loterestaurado]);
+        }, 2600);
+      } else {
+        console.error('Error al deshacer el retiro del lote con ID:', lote_id);
+      }
+      return deshacerOk.ok;
   };
 
   return (
@@ -96,6 +117,7 @@ export default function InicioPage() {
               indice={i}
               ocultarAlRetirar
               onRetirar={retirarLoteHandler}
+              onDeshacerRetirar={deshacerRetirarHandler}
             />
           ))}
         </div>

@@ -1,12 +1,48 @@
 import { FileUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useState,useEffect } from 'react'
 import BuscadorEscaneo from '../components/BuscadorEscaneo'
 import CabeceraPagina from '../components/CabeceraPagina'
 import InsigniaLote from '../components/InsigniaLote'
 import LoteTarjeta from '../components/LoteTarjeta'
-import { categoriasMuestra, lotesMuestra } from '../data/muestra'
-
+import type { ProductoView } from '../types/producto'
+import type { LoteView } from '../types/lote'
+import type { Categoria } from '../types/categoria'
+import { ucFirst } from '../utils/ucFirst'
 export default function ProductosPage() {
+
+  const [productos, setProductos] = useState<ProductoView[]>([])
+  const [lotes, setLotes] = useState<LoteView[]>([])
+  const [categorias, setCategorias] = useState<Categoria[]>([])
+
+  const [filtroEstado, setFiltroEstado] = useState('')
+  const [filtroCategoria, setFiltroCategoria] = useState('')
+  const [filtroUrgencia, setFiltroUrgencia] = useState('')
+  const [filteredProducts, setFilteredProducts] = useState<ProductoView[]>([]);
+
+  useEffect(() => {
+    getProductosPageData()
+  }, [])
+
+  function getProductosPageData() {
+    fetch('/api/getProductosPage',{
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if(data.error) return console.error('Error al obtener productos:', data.error)
+        setProductos(data.productos)
+        setLotes(data.lotes)
+        setCategorias(data.categorias)
+        setFilteredProducts(data.productos)
+      })
+      .catch((error) => {
+        console.error('Error al obtener productos:', error);
+      });
+  }
+
+
   return (
     <div className="pagina">
       <CabeceraPagina titulo="Productos" descripcion="Todos los productos con sus fechas de caducidad.">
@@ -27,10 +63,10 @@ export default function ProductosPage() {
         </label>
         <label className="campo campo--corto">
           <span className="solo-lectores">Categoría</span>
-          <select defaultValue="">
+          <select defaultValue="" onChange={filter}>
             <option value="">Todas las categorías</option>
-            {categoriasMuestra.map((c) => (
-              <option key={c.id}>{c.nombre}</option>
+            {categorias.map((categoria) => (
+              <option key={categoria.categoria_id}>{ucFirst(categoria.categoria_nombre)}</option>
             ))}
           </select>
         </label>
@@ -47,8 +83,8 @@ export default function ProductosPage() {
       </div>
 
       <div className="lista-lotes lista-lotes--movil">
-        {lotesMuestra.map((lote, i) => (
-          <LoteTarjeta key={lote.id} lote={lote} indice={i} />
+        {lotes.map((lote, i) => (
+          <LoteTarjeta key={lote.lote_id} lote={lote} indice={i} />
         ))}
       </div>
 
@@ -58,24 +94,35 @@ export default function ProductosPage() {
             <tr>
               <th>Producto</th>
               <th>Categoría</th>
-              <th>Ubicación</th>
+              {/* IMPLEMENTAR MAS ADELANTE */}
+              {/* <th>Ubicación</th> */}
               <th>Caducidad</th>
               <th>Aviso</th>
             </tr>
           </thead>
           <tbody>
-            {lotesMuestra.map((l, i) => (
-              <tr key={l.id} style={{ '--i': i } as React.CSSProperties}>
-                <td>
-                  <strong>{l.producto}</strong>
-                  <small>{l.ean}</small>
-                </td>
-                <td>{l.categoria}</td>
-                <td>{l.ubicacion}</td>
-                <td>{l.fecha}</td>
-                <td><InsigniaLote lote={l} /></td>
-              </tr>
-            ))}
+            {filteredProducts.map((p, i) => {
+              //Ordenamos los lotes por fecha de caducidad y cogmemos el primero(el que antes caduca)
+              const lotesProducto = lotes.filter((l) => l.producto_id === p.producto_id).sort((a, b) => a.fecha_caducidad.localeCompare(b.fecha_caducidad))[0]
+              
+              return (
+                <tr key={p.producto_id} style={{ '--i': i } as React.CSSProperties}>
+                  <td>
+                    <strong>{ucFirst(p.producto_nombre)}</strong>
+                    {/* <small>{l.ean}</small> */}
+                  </td>
+                  <td>{ucFirst(p.categoria_nombre)}</td>
+                  {lotesProducto && (
+                    <>
+                    {/* IMPLEMENTAR MAS ADELANTE */}
+                    {/* <td>{lotesProducto.ubicacion}</td> */} 
+                    <td>{lotesProducto.fecha_caducidad}</td>
+                    <td><InsigniaLote lote={lotesProducto} /></td>
+                  </>
+                  )}
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

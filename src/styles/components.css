@@ -208,7 +208,7 @@ select:focus-visible {
 .lote--sale {
   opacity: 0;
   transform: translateX(40px) scale(0.97);
-  pointer-events: none;
+  /* pointer-events: none; */
 }
 
 .lote__cabecera {
@@ -519,6 +519,14 @@ select:focus-visible {
   transform: scale(0.98);
 }
 
+.categoria__enlace {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
 .categoria__icono {
   display: grid;
   flex: none;
@@ -635,6 +643,16 @@ select:focus-visible {
 .errorMsg {
   color: #b42318;
   font-weight: bold;
+}
+
+.successMsg {
+  color: #15803d;
+  font-weight: bold;
+}
+
+.tipo_codigo {
+  color: var(--texto);
+  font-weight: 500;
 }
 
 @media (min-width: 768px) {

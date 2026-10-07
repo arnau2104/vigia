@@ -12,7 +12,7 @@ export interface Lote {
   fecha_caducidad: string   // llega como string ISO por JSON
   fecha_entrada: string
   cantidad: number | null
-  estado: number            // tinyint: 0 / 1
+  activo: number            // tinyint: 0 / 1
   fecha_retirada: string | null
 }
 
@@ -28,13 +28,8 @@ export interface LoteView {
   fecha_caducidad: string   // llega como string ISO por JSON
   fecha_entrada: string
   cantidad: number | null
-  estado: number            // tinyint: 0 / 1
+  activo: number            // tinyint: 0 / 1
   fecha_retirada: string | null
 }
 
-export interface ProductoMuestra {
-  id: string
-  ean: string
-  nombre: string
-  categoriaId: string
-}
+

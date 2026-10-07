@@ -10,13 +10,14 @@ interface Props {
   indice: number
   /** En Inicio el lote desaparece de los avisos al retirarlo. */
   ocultarAlRetirar?: boolean
-  onRetirar : (lote_id: number) => Promise<boolean>
+  onRetirar? : (lote_id: number) => Promise<boolean>
+  onDeshacerRetirar?: (lote_id: number) => Promise<boolean>
 }
 
 const formatearFecha = (iso: string) =>
   new Date(iso).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }).replace('.', '')
 
-export default function LoteTarjeta({ lote, indice, ocultarAlRetirar = false, onRetirar }: Props) {
+export default function LoteTarjeta({ lote, indice, ocultarAlRetirar = false, onRetirar,onDeshacerRetirar }: Props) {
   const [retirado, setRetirado] = useState(false)
   const [saliendo, setSaliendo] = useState(false)
   const [enviando, setEnviando] = useState(false)
@@ -31,9 +32,11 @@ export default function LoteTarjeta({ lote, indice, ocultarAlRetirar = false, on
     : lote
 
   const retirar = async () => {
+    if(!onRetirar) return
     setErrorMsg('')
     setEnviando(true)
     const ok = await onRetirar(lote.lote_id)
+    
     console.log("ok", ok)
     setEnviando(false)
 
@@ -42,7 +45,22 @@ export default function LoteTarjeta({ lote, indice, ocultarAlRetirar = false, on
       return
     }
     setRetirado(true)
+
     if (ocultarAlRetirar) setSaliendo(true)   // el padre la quita al acabar la animación
+  }
+
+  const deshacerRetirar = async () => {
+    if(!onDeshacerRetirar) return
+    setErrorMsg('')
+    const ok = await onDeshacerRetirar(lote.lote_id)
+    console.log("ok deshacer", ok)
+
+    if (!ok) {
+      setErrorMsg('Error al deshacer el retiro del lote')
+      return
+    }
+    setRetirado(false)
+    setSaliendo(false)
   }
 
 
@@ -98,7 +116,7 @@ export default function LoteTarjeta({ lote, indice, ocultarAlRetirar = false, on
                 <PackageCheck size={18} aria-hidden />
                 Reponer
               </button>
-              <button type="button" className="boton boton--suave" onClick={() => setRetirado(false)}>
+              <button type="button" className="boton boton--suave" onClick={ deshacerRetirar}>
                 <Undo2 size={18} aria-hidden />
                 Deshacer
               </button>

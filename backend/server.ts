@@ -35,6 +35,13 @@ app.get('/api', (req, res) => {
 app.get('/api/dashboard', Querys.dashboard);
 app.get('/api/comercio', Querys.comercio);
 app.post('/api/retirarLote', Querys.retirarLote);
+app.post('/api/deshacerRetirar', Querys.deshacerRetirar);
+app.get('/api/getCategorias', Querys.getCategorias);
+app.post('/api/crearCategoria', Querys.crearCategoria);
+app.post('/api/editarCategoria', Querys.editarCategoria);
+// app.post('/api/eliminarCategoria', Querys.eliminarCategoria);
+app.post('/api/getCategoriaIndivPage', Querys.getCategoriaIndivPage);
+app.get('/api/getProductosPage', Querys.getProductsPage);
 
 
 app.listen(port, () => {
