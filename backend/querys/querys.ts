@@ -47,7 +47,7 @@ export class Querys {
     }
 
     try {
-        const [result] = await connection.query<ResultSetHeader>('UPDATE lotes SET fecha_retirada = NOW() AND activo = 0 WHERE lote_id = ? AND comercio_id = ?', 
+        const [result] = await connection.query<ResultSetHeader>('UPDATE lotes SET fecha_retirada = CURDATE(), activo = 0 WHERE lote_id = ? AND comercio_id = ?', 
           [lote_id, req.comercio_id]);
 
         if (result.affectedRows === 0) {

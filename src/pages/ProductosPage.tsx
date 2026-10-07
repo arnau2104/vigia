@@ -1,6 +1,6 @@
 import { FileUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { useState,useEffect } from 'react'
+import { useState,useEffect, useMemo } from 'react'
 import BuscadorEscaneo from '../components/BuscadorEscaneo'
 import CabeceraPagina from '../components/CabeceraPagina'
 import InsigniaLote from '../components/InsigniaLote'
@@ -9,6 +9,13 @@ import type { ProductoView } from '../types/producto'
 import type { LoteView } from '../types/lote'
 import type { Categoria } from '../types/categoria'
 import { ucFirst } from '../utils/ucFirst'
+import { tipoAviso } from '../utils/tipoAviso'
+
+interface ProductoConLote {
+  p: ProductoView
+  lote: LoteView | undefined   // un producto puede no tener lotes
+}
+
 export default function ProductosPage() {
 
   const [productos, setProductos] = useState<ProductoView[]>([])
@@ -18,7 +25,7 @@ export default function ProductosPage() {
   const [filtroEstado, setFiltroEstado] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
   const [filtroUrgencia, setFiltroUrgencia] = useState('')
-  const [filteredProducts, setFilteredProducts] = useState<ProductoView[]>([]);
+  
 
   useEffect(() => {
     getProductosPageData()
@@ -35,12 +42,33 @@ export default function ProductosPage() {
         setProductos(data.productos)
         setLotes(data.lotes)
         setCategorias(data.categorias)
-        setFilteredProducts(data.productos)
       })
       .catch((error) => {
         console.error('Error al obtener productos:', error);
       });
   }
+
+  const productosFiltrados = useMemo<ProductoConLote[]>(() => {
+  return productos
+    .map((p) : ProductoConLote => {
+      // lote que antes caduca (el que muestra la tabla)
+      const lote = lotes
+        .filter((l) => l.producto_id === p.producto_id)
+        .sort((a, b) => a.fecha_caducidad.localeCompare(b.fecha_caducidad))[0]
+      return { p, lote }
+    })
+    .filter(({ p, lote }) => {
+      if (filtroCategoria && String(p.categoria_id) !== filtroCategoria) return false
+
+      if (filtroEstado === 'pendiente' && lote?.activo !== 0) return false
+      if (filtroEstado === 'aviso' && (!lote || lote.activo === 0)) return false
+
+      // un lote retirado no tiene urgencia (la insignia muestra "pendiente")
+      if (filtroUrgencia && (!lote || lote.activo === 0 || tipoAviso(lote) !== filtroUrgencia)) return false
+
+      return true
+    })
+}, [productos, lotes, filtroCategoria, filtroEstado, filtroUrgencia])
 
 
   return (
@@ -55,29 +83,29 @@ export default function ProductosPage() {
       <div className="filtros">
         <label className="campo campo--corto">
           <span className="solo-lectores">Estado</span>
-          <select defaultValue="">
+          <select defaultValue="" onChange={(e)=> setFiltroEstado(e.target.value)}>
             <option value="">Todos los estados</option>
-            <option>Con aviso</option>
-            <option>Pendiente de reposición</option>
+            <option value="aviso">Con aviso</option>
+            <option value="proximo">Pendiente de reposición</option>
           </select>
         </label>
         <label className="campo campo--corto">
           <span className="solo-lectores">Categoría</span>
-          <select defaultValue="" onChange={filter}>
+          <select defaultValue="" onChange={(e)=> setFiltroCategoria(e.target.value)}>
             <option value="">Todas las categorías</option>
             {categorias.map((categoria) => (
-              <option key={categoria.categoria_id}>{ucFirst(categoria.categoria_nombre)}</option>
+              <option key={categoria.categoria_id} value={categoria.categoria_id}>{ucFirst(categoria.categoria_nombre)}</option>
             ))}
           </select>
         </label>
         <label className="campo campo--corto">
           <span className="solo-lectores">Urgencia</span>
-          <select defaultValue="">
+          <select defaultValue="" onChange={(e)=> setFiltroUrgencia(e.target.value)}>
             <option value="">Cualquier urgencia</option>
-            <option>Caducado</option>
-            <option>Hoy</option>
-            <option>Próximo</option>
-            <option>Correcto</option>
+            <option value="caducado">Caducado</option>
+            <option value="hoy">Hoy</option>
+            <option value="proximo">Próximo</option>
+            <option value="correcto">Correcto</option>
           </select>
         </label>
       </div>
@@ -101,7 +129,7 @@ export default function ProductosPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map((p, i) => {
+            {productosFiltrados.map(({p, lote}, i) => {
               //Ordenamos los lotes por fecha de caducidad y cogmemos el primero(el que antes caduca)
               const lotesProducto = lotes.filter((l) => l.producto_id === p.producto_id).sort((a, b) => a.fecha_caducidad.localeCompare(b.fecha_caducidad))[0]
               
@@ -112,7 +140,7 @@ export default function ProductosPage() {
                     {/* <small>{l.ean}</small> */}
                   </td>
                   <td>{ucFirst(p.categoria_nombre)}</td>
-                  {lotesProducto && (
+                  {lote && (
                     <>
                     {/* IMPLEMENTAR MAS ADELANTE */}
                     {/* <td>{lotesProducto.ubicacion}</td> */} 
