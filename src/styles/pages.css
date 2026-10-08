@@ -196,3 +196,55 @@
     align-items: start;
   }
 }
+
+/* Registrar: código desconocido (elegir producto existente o crear uno) */
+.bloque-nuevo {
+  padding: 1rem;
+  background: var(--fondo);
+  border: 1px dashed var(--borde);
+  border-radius: var(--radio-sm);
+  animation: entrar 280ms ease-out both;
+}
+
+.producto-nuevo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: var(--hoy);
+}
+
+.opciones {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: var(--tactil);
+  padding: 0 0.85rem;
+  text-align: left;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+  transition:
+    background var(--transicion),
+    border-color var(--transicion);
+}
+
+.opcion:hover {
+  border-color: var(--marca);
+  background: var(--marca-suave);
+}
+
+.opcion--crear {
+  font-weight: 600;
+  color: var(--marca-fuerte);
+  border-style: dashed;
+}

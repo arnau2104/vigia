@@ -218,4 +218,23 @@ export class Querys {
     }
   }
 
+  static async codigoBarrasExiste(req: Request, res: Response) {
+    const { codigoBarras } = req.body;
+
+    if (!codigoBarras) {
+        return res.status(400).json({ error: 'Faltan datos para obtener los productos de la categoría' });
+    }
+
+    try {
+        const [result] = await connection.query<RowDataPacket[]>('SELECT * FROM producto_codigo_barras WHERE comercio_id = ? AND codigo_barras = ?', 
+          [req.comercio_id, codigoBarras]);
+
+        res.send(result.length > 0);
+        
+    } catch (e : any) {
+        console.error("error al obtener los datos", e);
+        res.status(500).json({ error: "Ha ocurrido un error inesperado, intentelo de nuevo"  });
+    }
+  }
+
 }

@@ -61,6 +61,13 @@ export default function ProductosPage() {
       return { p, lote }
     })
     .filter(({ p, lote }) => {
+
+      const coincideNombreProducto = p.producto_nombre.toLowerCase().includes(filtroTexto.toLowerCase()); 
+      const coincideCodigoBarras = codigosBarras.some((cb) => cb.producto_id === p.producto_id && cb.codigo_barras.toLowerCase().includes(filtroTexto))
+
+      //filtro de texto, mira si el nombre del producto o el codigo de barrras coinciden con el texto
+      if(filtroTexto && !coincideNombreProducto && !coincideCodigoBarras) return false
+
       if (filtroCategoria && String(p.categoria_id) !== filtroCategoria) return false
 
       // pendiente de reposición: ningún lote activo del producto
@@ -73,7 +80,7 @@ export default function ProductosPage() {
 
       return true
     })
-}, [productos, lotes, filtroCategoria, filtroEstado, filtroUrgencia])
+}, [productos, lotes, filtroCategoria, filtroEstado, filtroUrgencia,filtroTexto])
 
 
   return (
@@ -84,7 +91,7 @@ export default function ProductosPage() {
           Importar CSV
         </Link>
       </CabeceraPagina>
-      <BuscadorEscaneo codigosBarras={codigosBarras} busqueda={filtroTexto} onBusqueda={setFiltroTexto} />
+      <BuscadorEscaneo busqueda={filtroTexto} onBusqueda={setFiltroTexto} />
       <div className="filtros">
         <label className="campo campo--corto">
           <span className="solo-lectores">Estado</span>
