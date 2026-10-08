@@ -1,28 +1,42 @@
 import { useState } from 'react'
 import { ScanBarcode, Search, X } from 'lucide-react'
-import { lotesMuestra, productosMuestra } from '../data/muestra'
-import type { ProductoMuestra } from '../types/lote'
+import { lotesMuestra } from '../data/muestra'
+import type { LoteView } from '../types/lote'
+import type {CodigoBarrasView} from '../types/codigoBarras'
 import { loteMasUrgente } from '../utils/lotes'
 import InsigniaLote from './InsigniaLote'
 
-export default function BuscadorEscaneo() {
-  const [busqueda, setBusqueda] = useState('')
+interface Props {
+codigosBarras: CodigoBarrasView[]
+busqueda: string
+onBusqueda (texto: string) : void
+}
+
+export default function BuscadorEscaneo(codigosBarras, busqueda, onBusqueda) : Props {
+  // const [busqueda, setBusqueda] = useState('')
   const [escaneando, setEscaneando] = useState(false)
-  const [encontrado, setEncontrado] = useState<ProductoMuestra | null>(null)
+  const [encontrado, setEncontrado] = useState<CodigoBarrasView[]>([])
 
   // Solo maqueta: simula leer un código y consultar sus fechas.
   const escanear = () => {
-    setEncontrado(null)
+    setEncontrado([])
     setEscaneando(true)
     setTimeout(() => {
       setEscaneando(false)
-      setEncontrado(productosMuestra[0])
-      setBusqueda(productosMuestra[0].ean)
+      // setEncontrado(productosMuestra[0])
+      // setBusqueda(productosMuestra[0].ean)
     }, 1800)
   }
 
-  const principal = encontrado ? loteMasUrgente(encontrado.ean, lotesMuestra) : undefined
-  const lotes = encontrado ? lotesMuestra.filter((l) => l.ean === encontrado.ean) : []
+  // const filtrarPorTexto = (texto: string) => {
+   
+  //   setBusqueda(texto)
+  //   const filtrado = codigosBarras.filter((c) => c.producto_nombre.toLowerCase().includes(texto.toLowerCase()) || c.codigo_barras.toLowerCase().includes(texto.toLowerCase())) ;
+  //   setEncontrado(filtrado)
+  // }
+
+  // const principal = encontrado ? loteMasUrgente(encontrado.ean, lotesMuestra) : undefined
+  // const lotes = encontrado ? lotesMuestra.filter((l) => l.ean === encontrado.ean) : []
 
   return (
     <div className="buscador">
@@ -34,7 +48,7 @@ export default function BuscadorEscaneo() {
             type="search"
             placeholder="Buscar por nombre o EAN"
             value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
+            onChange={(e) => onBusqueda(e.target.value)}
           />
         </label>
         <button
@@ -71,7 +85,7 @@ export default function BuscadorEscaneo() {
             {lotes.length === 0 ? (
               <small>Sin lotes registrados</small>
             ) : (
-              lotes.map((l) => <InsigniaLote key={l.id} lote={l} conFecha />)
+              lotes.map((lote) => <InsigniaLote key={lote.lote_id} lote={lote} conFecha />)
             )}
           </div>
         </section>

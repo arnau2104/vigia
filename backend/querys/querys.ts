@@ -206,8 +206,11 @@ export class Querys {
 
         const [categorias] = await connection.query<RowDataPacket[]>('SELECT * FROM categorias WHERE comercio_id = ?',
           [req.comercio_id]);
+
+        const [codigosBarras] = await connection.query<RowDataPacket[]>('SELECT * FROM producto_codigo_barras_view WHERE comercio_id = ?',
+          [req.comercio_id]);
         
-          res.send({ productos,lotes, categorias });
+          res.send({ productos,lotes, categorias,codigosBarras });
         
     } catch (e : any) {
         console.error("error al obtener los datos", e);

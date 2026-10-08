@@ -8,6 +8,7 @@ import LoteTarjeta from '../components/LoteTarjeta'
 import type { ProductoView } from '../types/producto'
 import type { LoteView } from '../types/lote'
 import type { Categoria } from '../types/categoria'
+import type { CodigoBarrasView } from '../types/codigoBarras'
 import { ucFirst } from '../utils/ucFirst'
 import { tipoAviso } from '../utils/tipoAviso'
 
@@ -21,11 +22,12 @@ export default function ProductosPage() {
   const [productos, setProductos] = useState<ProductoView[]>([])
   const [lotes, setLotes] = useState<LoteView[]>([])
   const [categorias, setCategorias] = useState<Categoria[]>([])
+  const [codigosBarras, setCodigosBarras] = useState<CodigoBarrasView[]>([])
 
   const [filtroEstado, setFiltroEstado] = useState('')
   const [filtroCategoria, setFiltroCategoria] = useState('')
   const [filtroUrgencia, setFiltroUrgencia] = useState('')
-  
+  const [filtroTexto, setFiltroTexto] = useState('')  
 
   useEffect(() => {
     getProductosPageData()
@@ -42,6 +44,7 @@ export default function ProductosPage() {
         setProductos(data.productos)
         setLotes(data.lotes)
         setCategorias(data.categorias)
+        setCodigosBarras(data.codigosBarras)
       })
       .catch((error) => {
         console.error('Error al obtener productos:', error);
@@ -60,7 +63,9 @@ export default function ProductosPage() {
     .filter(({ p, lote }) => {
       if (filtroCategoria && String(p.categoria_id) !== filtroCategoria) return false
 
-      if (filtroEstado === 'pendiente' && lote?.activo !== 0) return false
+      // pendiente de reposición: ningún lote activo del producto
+      const sinLoteActivo = !lotes.some((l) => l.producto_id === p.producto_id && l.activo !== 0)
+      if (filtroEstado === 'pendiente' && !sinLoteActivo) return false
       if (filtroEstado === 'aviso' && (!lote || lote.activo === 0)) return false
 
       // un lote retirado no tiene urgencia (la insignia muestra "pendiente")
@@ -79,14 +84,14 @@ export default function ProductosPage() {
           Importar CSV
         </Link>
       </CabeceraPagina>
-      <BuscadorEscaneo />
+      <BuscadorEscaneo codigosBarras={codigosBarras} busqueda={filtroTexto} onBusqueda={setFiltroTexto} />
       <div className="filtros">
         <label className="campo campo--corto">
           <span className="solo-lectores">Estado</span>
           <select defaultValue="" onChange={(e)=> setFiltroEstado(e.target.value)}>
             <option value="">Todos los estados</option>
             <option value="aviso">Con aviso</option>
-            <option value="proximo">Pendiente de reposición</option>
+            <option value="pendiente">Pendiente de reposición</option>
           </select>
         </label>
         <label className="campo campo--corto">
@@ -129,7 +134,7 @@ export default function ProductosPage() {
             </tr>
           </thead>
           <tbody>
-            {productosFiltrados.map(({p, lote}, i) => {
+            {productosFiltrados.map(({p}, i) => {
               //Ordenamos los lotes por fecha de caducidad y cogmemos el primero(el que antes caduca)
               const lotesProducto = lotes.filter((l) => l.producto_id === p.producto_id).sort((a, b) => a.fecha_caducidad.localeCompare(b.fecha_caducidad))[0]
               
@@ -140,14 +145,13 @@ export default function ProductosPage() {
                     {/* <small>{l.ean}</small> */}
                   </td>
                   <td>{ucFirst(p.categoria_nombre)}</td>
-                  {lote && (
-                    <>
+                  
+                    
                     {/* IMPLEMENTAR MAS ADELANTE */}
                     {/* <td>{lotesProducto.ubicacion}</td> */} 
-                    <td>{lotesProducto.fecha_caducidad}</td>
-                    <td><InsigniaLote lote={lotesProducto} /></td>
-                  </>
-                  )}
+                    <td>{lotesProducto ? lotesProducto.fecha_caducidad : ''}</td>
+                    <td>{lotesProducto ? <InsigniaLote lote={lotesProducto} />  : <InsigniaLote lote={lotesProducto} retirado /> }</td>
+                  
                 </tr>
               )
             })}
