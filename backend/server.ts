@@ -42,6 +42,8 @@ app.post('/api/editarCategoria', Querys.editarCategoria);
 // app.post('/api/eliminarCategoria', Querys.eliminarCategoria);
 app.post('/api/getCategoriaIndivPage', Querys.getCategoriaIndivPage);
 app.get('/api/getProductosPage', Querys.getProductsPage);
+app.post('/api/codigoBarrasExiste', Querys.codigoBarrasExiste);
+app.get('/api/getProductosCodigos', Querys.getProductosCodigos);
 
 
 app.listen(port, () => {

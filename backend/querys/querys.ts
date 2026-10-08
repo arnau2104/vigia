@@ -218,6 +218,22 @@ export class Querys {
     }
   }
 
+  static async getProductosCodigos(req: Request, res: Response) {
+    try {
+        const [productos] = await connection.query<RowDataPacket[]>('SELECT * FROM productos_view WHERE comercio_id = ?',
+          [req.comercio_id]);
+
+        const [codigosBarras] = await connection.query<RowDataPacket[]>('SELECT * FROM producto_codigo_barras_view WHERE comercio_id = ?',
+          [req.comercio_id]);
+        
+          res.send({productos, codigosBarras});
+        
+    } catch (e : any) {
+        console.error("error al obtener los datos", e);
+        res.status(500).json({ error: "Ha ocurrido un error inesperado, intentelo de nuevo"  });
+    }
+  }
+
   static async codigoBarrasExiste(req: Request, res: Response) {
     const { codigoBarras } = req.body;
 
@@ -226,10 +242,10 @@ export class Querys {
     }
 
     try {
-        const [result] = await connection.query<RowDataPacket[]>('SELECT * FROM producto_codigo_barras WHERE comercio_id = ? AND codigo_barras = ?', 
+        const [codigo_barras] = await connection.query<RowDataPacket[]>('SELECT * FROM producto_codigo_barras WHERE comercio_id = ? AND codigo_barras = ?', 
           [req.comercio_id, codigoBarras]);
 
-        res.send(result.length > 0);
+        res.send(codigo_barras);
         
     } catch (e : any) {
         console.error("error al obtener los datos", e);

@@ -1,7 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Camera, CircleCheck, CircleHelp, PackagePlus, Plus, ScanBarcode } from 'lucide-react'
 import CabeceraPagina from '../components/CabeceraPagina'
+import type {Producto} from '../types/producto'
 import EscanerCodigo from '../components/EscanerCodigo'
+import type { CodigoBarrasView } from '../types/codigoBarras'
+import { ucFirst } from '../utils/ucFirst'
+
 
 // ── Datos de ejemplo (estáticos) ─────────────────────────────────────────────
 // Cuando haya backend se sustituirán por la respuesta de la API.
@@ -33,6 +37,8 @@ export default function RegistrarLotePage() {
   const [ean, setEan] = useState('')
   const [escaneando, setEscaneando] = useState(false)
   const [fecha, setFecha] = useState('')
+  const [productos, setProductos] = useState<Producto[]>([])
+  const [codigosBarras, setCodigosBarra] = useState<CodigoBarrasView[]>([])
 
   // Solo se usan cuando el código no se conoce
   const [busqueda, setBusqueda] = useState('')
@@ -42,35 +48,73 @@ export default function RegistrarLotePage() {
 
   const [mensaje, setMensaje] = useState('')
 
+
+  useEffect(() => {
+      getData();
+  },[])
+
+  function getData() {
+    fetch('/api/getProductosCodigos', {
+      method: 'GET',
+      credentials: 'include',
+    }).then(res => res.json())
+    .then(data => {
+      console.log('Datos de productos:', data);
+      if(data.error) return console.error('Error al obtener productos:', data.error);
+      setProductos(data.productos);
+      setCodigosBarra(data.codigosBarras);
+    })
+    .catch(error => {
+      console.error('Error al obtener productos:', error);
+    })
+  }
+
   // ── Caso actual según el código escrito o escaneado ────────────────────────
-  const codigo = ean.trim()
-  const codigoCompleto = codigo.length >= LONGITUD_MINIMA_EAN
-  const codigoConocido = CODIGOS_EJEMPLO.find((c) => c.codigo_barras === codigo)
-  const productoConocido = PRODUCTOS_EJEMPLO.find((p) => p.producto_id === codigoConocido?.producto_id)
+ 
+  const codigoCompleto = ean.length >= LONGITUD_MINIMA_EAN
+  const codigoConocido = codigosBarras.find((c) => c.codigo_barras === ean)
+  const productoConocido = productos.find((p) => p.producto_id === codigoConocido?.producto_id)
   const codigoDesconocido = codigoCompleto && !codigoConocido
 
   const textoBusqueda = busqueda.trim()
-  const coincidencias = PRODUCTOS_EJEMPLO.filter((p) =>
+  const coincidencias = productos.filter((p) =>
     p.producto_nombre.toLowerCase().includes(textoBusqueda.toLowerCase()),
   )
   const nombreCreado = nombreNuevo.trim()
   const productoElegido =
     eleccion?.tipo === 'existente'
-      ? PRODUCTOS_EJEMPLO.find((p) => p.producto_id === eleccion.producto_id)
+      ? productos.find((p) => p.producto_id === eleccion.producto_id)
       : undefined
 
-  const cambiarEan = (valor: string) => {
-    setEan(valor)
+  const cambiarEan = (codigoBarras : string) => {
+    setEan(codigoBarras.trim())
     // al cambiar de código se descarta lo que se había elegido para el anterior
     if(ean.length < LONGITUD_MINIMA_EAN) return;
 
-    
+    fetch('/api/codigoBarrasExiste', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ codigoBarras })
+    }).then(res => res.json())
+    .then(data => {
+      console.log(data);
+      if(data.error) return console.log("error al comprobar el codigo de barras", data.error)
+      if (data.length > 0) {
+        setEleccion({ tipo: 'existente', producto_id: data.codigo_barras.producto_id })
+      } else {
+        setEleccion({ tipo: 'nuevo' })
+      }
 
-    setBusqueda('')
-    setEleccion(null)
-    setCategoriaId('')
-    setNombreNuevo('')
-    setMensaje('')
+       setBusqueda('')
+      setEleccion(null)
+      setCategoriaId('')
+      setNombreNuevo('')
+      setMensaje('')
+    })
+
+   
   }
 
   // ¿Se puede registrar? Depende de en qué caso estemos
@@ -88,7 +132,7 @@ export default function RegistrarLotePage() {
     if (!codigoConocido && eleccion?.tipo === 'existente') {
       accion = `Código añadido a «${productoElegido?.producto_nombre}» y lote registrado.`
     } else if (!codigoConocido && eleccion?.tipo === 'nuevo') {
-      accion = `Producto «${nombreCreado}» creado con el código ${codigo} y lote registrado.`
+      accion = `Producto «${nombreCreado}» creado con el código ${ean} y lote registrado.`
     }
     cambiarEan('') // limpia el formulario (y el mensaje anterior)
     setFecha('')
@@ -107,7 +151,7 @@ export default function RegistrarLotePage() {
               inputMode="numeric"
               placeholder="8410000123456"
               value={ean}
-              onChange={(e) => cambiarEan(e.target.value)}
+              onInput={(e) => cambiarEan(e.currentTarget.value)}
             />
             <button type="button" className="boton boton--secundario" onClick={() => setEscaneando(true)}>
               <ScanBarcode size={22} aria-hidden />
@@ -122,7 +166,7 @@ export default function RegistrarLotePage() {
           {productoConocido && (
             <p className="producto-detectado">
               <CircleCheck size={18} aria-hidden />
-              {productoConocido.producto_nombre}
+              {ucFirst(productoConocido.producto_nombre)}
             </p>
           )}
         </div>
