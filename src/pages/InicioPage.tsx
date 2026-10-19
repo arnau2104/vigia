@@ -1,5 +1,6 @@
 import { useState, useEffect,useRef } from 'react'
-import { AlarmClock, Clock, OctagonAlert } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { AlarmClock, Clock, OctagonAlert, BellRing } from 'lucide-react'
 import CabeceraPagina from '../components/CabeceraPagina'
 import LoteTarjeta from '../components/LoteTarjeta'
 import CategoriaTarjeta from '../components/CategoriaTarjeta'
@@ -97,7 +98,11 @@ export default function InicioPage() {
 
   return (
     <div className="pagina">
-      <CabeceraPagina titulo="Avisos" descripcion="Lo que necesita tu atención ahora mismo." />
+      <CabeceraPagina titulo="Avisos" descripcion="Lo que necesita tu atención ahora mismo.">
+        <Link to="/notificaciones" className="enlace-ajustes" aria-label="Notificaciones">
+          <BellRing size={22} aria-hidden />
+        </Link>
+      </CabeceraPagina>
       <section className="contadores" aria-label="Resumen">
         {contadores.map(({ nivel, etiqueta, icono: Icono }, i) => (
           <div key={nivel} className={`contador contador--${nivel}`} style={{ '--i': i } as React.CSSProperties}>

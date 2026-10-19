@@ -2,9 +2,11 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import { Querys } from './querys/querys.ts';
 import type { Request,Response } from 'express';
-
 import path from 'path'
 import { fileURLToPath } from 'url'
+import webpush from 'web-push'
+import cron from 'node-cron'
+import { enviarAvisos } from './avisos.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const dist = path.resolve(__dirname, '../dist')
@@ -14,6 +16,8 @@ const dist = path.resolve(__dirname, '../dist')
 const app = express();
 
 const port = 3000;
+
+webpush.setVapidDetails(process.env.VAPID_SUBJECT!, process.env.VAPID_PUBLIC_KEY!, process.env.VAPID_PRIVATE_KEY!);
 
 declare global {
   namespace Express {
@@ -79,11 +83,19 @@ app.post('/api/eliminarCategoria', Querys.eliminarCategoria);
 app.post('/api/importarCategorias', Querys.importarCategorias);
 app.post('/api/importarProductos', Querys.importarProductos);
 
+//ENDPOINTS notificaciones push
+app.get('/api/push/clave', Querys.pushClave);
+app.post('/api/push/getPushSuscripcion', Querys.getPushSuscripcion);
+app.post('/api/push/suscribir', Querys.suscripcionPush);
+
 // 1. Cualquier otra ruta (/productos, /categorias/editar/3…) devuelve index.html
 app.get('/{*splat}', (req, res) => {
   res.sendFile(path.join(dist, 'index.html'))
 })
 
+cron.schedule('* * * * *', async () => {
+  try { await enviarAvisos() } catch (e: any) { console.error('Error en el cron de avisos', e.message) }
+})
 
 app.listen(port, () => {
     console.log(`Servidor escuchando en el puerto http://localhost:${port}`);

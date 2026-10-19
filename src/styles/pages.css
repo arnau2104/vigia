@@ -28,6 +28,13 @@
   gap: 0.5rem;
 }
 
+.formularioNotificaion {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+
+}
+
 /* Inicio */
 @media (min-width: 768px) {
   .contadores {
@@ -281,4 +288,130 @@
   font-weight: 600;
   color: var(--marca-fuerte);
   border-style: dashed;
+}
+
+/* Ajustes */
+.ajustes {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.ajuste {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--borde);
+}
+
+.ajustes .subtitulo + .ajuste {
+  border-top: 0;
+}
+
+.ajuste__icono {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radio-sm);
+  color: var(--marca-fuerte);
+  background: var(--marca-suave);
+}
+
+.ajuste__icono--caducado { color: var(--caducado); background: var(--caducado-fondo); }
+.ajuste__icono--hoy { color: var(--hoy); background: var(--hoy-fondo); }
+.ajuste__icono--proximo { color: var(--proximo); background: var(--proximo-fondo); }
+
+.ajuste__texto label {
+  font-weight: 600;
+}
+
+.ajuste__texto p {
+  font-size: 0.875rem;
+  color: var(--texto-suave);
+}
+
+.ajuste__hora {
+  width: auto;
+  min-width: 7rem;
+  text-align: center;
+}
+
+/* Interruptor: checkbox con aspecto de switch */
+.interruptor {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 3rem;
+  min-height: 0;
+  height: 1.75rem;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--borde);
+  border: 0;
+  cursor: pointer;
+  transition: background var(--transicion);
+}
+
+.interruptor::after {
+  content: '';
+  position: absolute;
+  top: 0.2rem;
+  left: 0.2rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(20 32 43 / 0.3);
+  transition: transform var(--transicion);
+}
+
+.interruptor:checked {
+  background: var(--marca);
+}
+
+.interruptor:checked::after {
+  transform: translateX(1.25rem);
+}
+
+.ajustes__guardar {
+  width: 100%;
+}
+
+/* Rueda de ajustes en el dashboard: solo móvil (en escritorio está en la barra lateral) */
+.cabecera-pagina:has(> .enlace-ajustes) {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.enlace-ajustes {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--tactil);
+  height: var(--tactil);
+  border-radius: 50%;
+  color: var(--texto-suave);
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  transition: color var(--transicion), background var(--transicion);
+}
+
+.enlace-ajustes:hover {
+  color: var(--marca-fuerte);
+  background: var(--marca-suave);
+}
+
+@media (min-width: 768px) {
+  .enlace-ajustes {
+    display: none;
+  }
+
+  .ajustes__guardar {
+    width: auto;
+    justify-self: start;
+  }
 }

@@ -7,6 +7,7 @@ import InicioPage from './pages/InicioPage'
 import ProductosPage from './pages/ProductosPage'
 import RegistrarLotePage from './pages/RegistrarLotePage'
 import EditarProducto from './pages/EditarProducto'
+import NotificacionesPage from './pages/NotificacionesPage'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="productos" element={<ProductosPage />} />
         <Route path="productos/:producto_id/editar" element={<EditarProducto />} />
         <Route path="importar" element={<ImportarProductosPage />} />
+        <Route path="notificaciones" element={<NotificacionesPage />} />
       </Route>
     </Routes>
   )

@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { FileUp, House, Layers, PackagePlus, Store, Tag } from 'lucide-react'
+import { FileUp, House, Layers, PackagePlus, BellRing, Store, Tag } from 'lucide-react'
 import { useEffect,useState } from 'react'
 import type { Comercio } from '../types/comercio'
 
@@ -15,6 +15,7 @@ const enlaces = [
   { to: '/categorias', etiqueta: 'Categorías', icono: Layers },
   { to: '/productos', etiqueta: 'Productos', icono: Tag },
   { to: '/importar', etiqueta: 'Importar', icono: FileUp, soloEscritorio: true },
+  { to: '/notificaciones', etiqueta: 'Notificaciones', icono: BellRing, soloEscritorio: true },
 ]
 
 function getComerciodata() {

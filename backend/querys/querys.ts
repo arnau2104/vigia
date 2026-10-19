@@ -625,4 +625,49 @@ export class Querys {
     }
   }
 
+  static async pushClave(req: Request, res: Response) {
+    res.json({clave: process.env.VAPID_PUBLIC_KEY});
+  }
+
+  static async suscripcionPush(req: Request, res: Response) {
+    
+    const { endpoint, keys, activa, hora_aviso, zona_horaria, avisar_caducados, avisar_hoy, avisar_proximos } = req.body;
+    if (!endpoint || !keys?.p256dh || !keys?.auth || activa === undefined || !hora_aviso) {
+        return res.status(400).json({ error: 'Faltan datos para insertar la suscripción' });
+    }
+
+    try {
+
+      await connection.query<ResultSetHeader>(
+        `INSERT INTO push_suscripciones (comercio_id, endpoint, p256dh, auth, activa, hora_aviso, zona_horaria, avisar_caducados, avisar_hoy, avisar_proximos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+        comercio_id = VALUES(comercio_id), p256dh = VALUES(p256dh), auth = VALUES(auth),
+        activa = VALUES(activa), hora_aviso = VALUES(hora_aviso),
+        zona_horaria = VALUES(zona_horaria),
+        avisar_caducados = VALUES(avisar_caducados), avisar_hoy = VALUES(avisar_hoy),
+        avisar_proximos = VALUES(avisar_proximos)`,
+      [req.comercio_id, endpoint, keys.p256dh, keys.auth, activa ?? 1, hora_aviso ?? '09:00', zona_horaria ?? 'Europe/Madrid', avisar_caducados ?? 1, avisar_hoy ?? 1, avisar_proximos ?? 1]);
+      
+      res.send({message: "Cambios guardados con éxito"})
+  }catch (e : any) {
+    console.error("error al insertar la suscripción", e.message);
+    res.status(500).json({ error: "Ha ocurrido un error inesperado, intentelo de nuevo"  });
+  }
 }
+
+static async getPushSuscripcion(req: Request, res: Response) {
+  try {
+    const { endpoint } = req.body;
+      const [suscripcion] = await connection.query<RowDataPacket[]>('SELECT * FROM push_suscripciones WHERE comercio_id = ? AND endpoint = ?', 
+        [req.comercio_id, endpoint]);
+      res.json({suscripcion : suscripcion[0]});
+  } catch (e : any) {
+      console.error("error al obtener la suscripción", e.message);
+      res.status(500).json({ error: "Ha ocurrido un error inesperado, intentelo de nuevo"  });
+  }
+
+}
+
+
+}
+
