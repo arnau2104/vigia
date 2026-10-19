@@ -3,6 +3,9 @@ import { PackageCheck, PackageMinus, Undo2 } from 'lucide-react'
 import type { LoteView } from '../types/lote'
 import InsigniaLote from './InsigniaLote'
 import { tipoAviso } from '../utils/tipoAviso'
+import { ucFirst } from '../utils/ucFirst'
+import { Link } from 'react-router-dom'
+
 
 
 interface Props {
@@ -26,10 +29,7 @@ export default function LoteTarjeta({ lote, indice, ocultarAlRetirar = false, on
   const [repuesto, setRepuesto] = useState<string | null>(null)
   const [errorMsg , setErrorMsg] = useState('')
 
-  // Solo maqueta: tras reponer, el lote muestra la nueva fecha y vuelve a estar en orden.
-  const vista: LoteView = repuesto
-    ? { ...lote, fecha_caducidad: repuesto }
-    : lote
+  
 
   const retirar = async () => {
     if(!onRetirar) return
@@ -74,48 +74,27 @@ export default function LoteTarjeta({ lote, indice, ocultarAlRetirar = false, on
 
   return (
     <article
-      className={`lote lote--${retirado ? 'retirado' : tipoAviso(vista)}${saliendo ? ' lote--sale' : ''}`}
+      className={`lote lote--${retirado ? 'retirado' : tipoAviso(lote)}${saliendo ? ' lote--sale' : ''}`}
       style={{ '--i': indice } as React.CSSProperties}
     >
       <div className="lote__cabecera">
-        <h3>{lote.producto_nombre}</h3>
-        <InsigniaLote lote={vista} retirado={retirado} />
+        <h3>{ucFirst(lote.producto_nombre)}</h3>
+        <InsigniaLote lote={lote} retirado={retirado} />
       </div>
       <p className="lote__datos">
-        Caduca el {formatearFecha(vista.fecha_caducidad)}
+        Caduca el {formatearFecha(lote.fecha_caducidad)}
       </p>
 
-      {reponiendo ? (
-        <form className="lote__reponer" onSubmit={guardarReposicion}>
-          <div className="campo">
-            <label htmlFor={`repo-${lote.lote_id}`}>Nueva fecha de caducidad</label>
-            <input
-              id={`repo-${lote.lote_id}`}
-              type="date"
-              value={nuevaFecha}
-              onChange={(e) => setNuevaFecha(e.target.value)}
-              required
-              autoFocus
-            />
-          </div>
-          <div className="lote__acciones">
-            <button type="submit" className="boton boton--primario">
-              <PackageCheck size={18} aria-hidden />
-              Guardar reposición
-            </button>
-            <button type="button" className="boton boton--suave" onClick={() => setReponiendo(false)}>
-              Cancelar
-            </button>
-          </div>
-        </form>
-      ) : (
+      
         <div className="lote__acciones">
           {retirado ? (
             <>
-              <button type="button" className="boton boton--primario" onClick={() => setReponiendo(true)}>
+            <Link to={`/reponer/${lote.producto_id}`} >
+              <button type="button" className="boton boton--primario" >
                 <PackageCheck size={18} aria-hidden />
                 Reponer
               </button>
+            </Link>
               <button type="button" className="boton boton--suave" onClick={ deshacerRetirar}>
                 <Undo2 size={18} aria-hidden />
                 Deshacer
@@ -129,7 +108,7 @@ export default function LoteTarjeta({ lote, indice, ocultarAlRetirar = false, on
           )}
         </div>
 
-      )}
+      
       {errorMsg && (
         <p className="errorMsg">{errorMsg}</p>
       )}

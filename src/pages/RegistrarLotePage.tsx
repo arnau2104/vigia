@@ -1,43 +1,33 @@
 import { useState, useEffect } from 'react'
-import { Camera, CircleCheck, CircleHelp, PackagePlus, Plus, ScanBarcode } from 'lucide-react'
+import { CircleCheck, CircleHelp, PackagePlus, Plus, ScanBarcode,CircleX } from 'lucide-react'
 import CabeceraPagina from '../components/CabeceraPagina'
 import type {Producto} from '../types/producto'
 import EscanerCodigo from '../components/EscanerCodigo'
 import type { CodigoBarrasView } from '../types/codigoBarras'
+import type { Categoria } from '../types/categoria'
 import { ucFirst } from '../utils/ucFirst'
+import { useParams } from 'react-router-dom'
 
 
-// ── Datos de ejemplo (estáticos) ─────────────────────────────────────────────
-// Cuando haya backend se sustituirán por la respuesta de la API.
-const CATEGORIAS_EJEMPLO = [
-  { categoria_id: 1, categoria_nombre: 'lácteos' },
-  { categoria_id: 2, categoria_nombre: 'carnes' },
-  { categoria_id: 3, categoria_nombre: 'bebidas' },
-]
 
-const PRODUCTOS_EJEMPLO = [
-  { producto_id: 1, producto_nombre: 'Yogur natural pack 4', categoria_id: 1 },
-  { producto_id: 2, producto_nombre: 'Leche entera 1L', categoria_id: 1 },
-  { producto_id: 3, producto_nombre: 'Queso fresco 250g', categoria_id: 1 },
-  { producto_id: 4, producto_nombre: 'Zumo de naranja 1L', categoria_id: 3 },
-]
 
-// Un producto puede tener varios códigos de barras
-const CODIGOS_EJEMPLO = [
-  { codigo_barras: '8410000123456', producto_id: 1 },
-  { codigo_barras: '8410000654321', producto_id: 2 },
-]
+// Decisión del usuario cuando el código no está registrado:
+// null = aún no ha decidido, asociar = añadirlo a un producto existente, crear = producto nuevo
+type Eleccion = { tipo: 'asociar'; producto_id: number } | { tipo: 'crear' } | null
 
 // Longitud mínima para considerar que el usuario ya ha escrito un código completo
 const LONGITUD_MINIMA_EAN = 8
 
-type Eleccion = { tipo: 'existente'; producto_id: number } | { tipo: 'nuevo' } | null
-
 export default function RegistrarLotePage() {
+
+  const productoId = Number(useParams().producto_id)
+
   const [ean, setEan] = useState('')
   const [escaneando, setEscaneando] = useState(false)
   const [fecha, setFecha] = useState('')
+  const [cantidad, setCantidad] = useState(1)
   const [productos, setProductos] = useState<Producto[]>([])
+  const [categorias, setCategorias] = useState<Categoria[]>([])
   const [codigosBarras, setCodigosBarra] = useState<CodigoBarrasView[]>([])
 
   // Solo se usan cuando el código no se conoce
@@ -46,11 +36,12 @@ export default function RegistrarLotePage() {
   const [categoriaId, setCategoriaId] = useState('')
   const [nombreNuevo, setNombreNuevo] = useState('') // nombre editable del producto que se va a crear
 
-  const [mensaje, setMensaje] = useState('')
+  const [mensaje, setMensaje] = useState([ '','' ]) // [tipo, mensaje] tipo puede ser 'successMsg' o 'errorMsg
 
 
   useEffect(() => {
       getData();
+        console.log("Producto id",productoId)
   },[])
 
   function getData() {
@@ -63,10 +54,117 @@ export default function RegistrarLotePage() {
       if(data.error) return console.error('Error al obtener productos:', data.error);
       setProductos(data.productos);
       setCodigosBarra(data.codigosBarras);
+      setCategorias(data.categorias);
+
+      if(productoId) {
+        //ordernamos por el codigo de barras, el ultimo en ser creado es el que escojemos
+        let ultimoCodigo = data.codigosBarras.filter((c: CodigoBarrasView) => c.producto_id === productoId).sort((a: CodigoBarrasView, b: CodigoBarrasView) => b.producto_codigo_id - a.producto_codigo_id)[0]
+        if(ultimoCodigo) {
+          setEan(ultimoCodigo.codigo_barras)
+         
+        }
+      }
+
     })
     .catch(error => {
       console.error('Error al obtener productos:', error);
     })
+  }
+
+  const cambiarEan = (codigoBarras: string) => {
+    setEan(codigoBarras.trim())
+    setEscaneando(false)
+    // al cambiar de código se descarta lo que se había elegido para el anterior
+    setBusqueda('')
+    setEleccion(null)
+    setCategoriaId('')
+    setNombreNuevo('')
+    setMensaje([])
+  }
+
+  const registrar = (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!puedeRegistrar) return
+
+    if (!codigoConocido && eleccion?.tipo === 'asociar') { // se crea el lote y se añade el codigo al producto existente
+        asociar();
+    } else if (!codigoConocido && eleccion?.tipo === 'crear') { // se crea el lote , y el producto y su codigo de barras
+      crearProducto();
+      
+    } else { //solo hay que crear el lote, el codugo ya existe
+      crearLote()
+      
+    }
+    cambiarEan('') // limpia el formulario (y el mensaje anterior)
+    setFecha('')
+    setTimeout(() => setMensaje([]), 3000)
+    // setMensaje(accion)
+  }
+
+  function crearLote() {
+    fetch('/api/crearLote', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({producto_id: productoConocido?.producto_id,  fecha_caducidad: fecha, cantidad  }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Respuesta de crear lote:', data);
+        if (data.error) return setMensaje(['error',data.error]), console.error('Error al crear lote:', data.error);
+        setMensaje(['success',data.message]);
+      })
+      .catch((error) => {
+        console.error('Error al crear lote:', error);
+        setMensaje(['error','Error al crear lote']);
+      });
+  }
+
+  function asociar() {
+    if(!eleccion || eleccion?.tipo !== 'asociar' || !eleccion.producto_id ) return
+    const productoId = eleccion.producto_id;
+    fetch('/api/asociarLote', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ producto_id: productoId,  fecha_caducidad: fecha, cantidad, codigo_barras: ean }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Respuesta de asociar lote:', data);
+        if (data.error) return setMensaje(['error',data.error]), console.error('Error al asociar lote:', data.error);
+        setMensaje(['success',data.message]);
+      })
+      .catch((error) => {
+        console.error('Error al asociar lote:', error);
+        setMensaje(['error','Error al asociar lote']);
+      });
+  }
+
+  function crearProducto() {
+    fetch('/api/crearProducto', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ producto_nombre: nombreNuevo.toLowerCase(), codigo_barras: ean , categoria_id: categoriaId, fecha_caducidad: fecha, cantidad }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log('Respuesta de crear producto:', data);
+        if (data.error) return setMensaje(['error',data.error]), console.error('Error al crear producto:', data.error);
+        setMensaje(['success',data.message]);
+        getData(); //refrescamos los datos, para que se vean los nuevos productos
+      })
+      .catch((error) => {
+        console.error('Error al crear producto:', error);
+        setMensaje(['error','Error al crear producto']);
+      });
   }
 
   // ── Caso actual según el código escrito o escaneado ────────────────────────
@@ -82,62 +180,19 @@ export default function RegistrarLotePage() {
   )
   const nombreCreado = nombreNuevo.trim()
   const productoElegido =
-    eleccion?.tipo === 'existente'
+    eleccion?.tipo === 'asociar'
       ? productos.find((p) => p.producto_id === eleccion.producto_id)
       : undefined
 
-  const cambiarEan = (codigoBarras : string) => {
-    setEan(codigoBarras.trim())
-    // al cambiar de código se descarta lo que se había elegido para el anterior
-    if(ean.length < LONGITUD_MINIMA_EAN) return;
-
-    fetch('/api/codigoBarrasExiste', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ codigoBarras })
-    }).then(res => res.json())
-    .then(data => {
-      console.log(data);
-      if(data.error) return console.log("error al comprobar el codigo de barras", data.error)
-      if (data.length > 0) {
-        setEleccion({ tipo: 'existente', producto_id: data.codigo_barras.producto_id })
-      } else {
-        setEleccion({ tipo: 'nuevo' })
-      }
-
-       setBusqueda('')
-      setEleccion(null)
-      setCategoriaId('')
-      setNombreNuevo('')
-      setMensaje('')
-    })
-
-   
-  }
+  
 
   // ¿Se puede registrar? Depende de en qué caso estemos
   const productoListo = codigoConocido
     ? true
-    : eleccion?.tipo === 'existente' || (eleccion?.tipo === 'nuevo' && nombreCreado !== '' && categoriaId !== '')
+    : eleccion?.tipo === 'asociar' || (eleccion?.tipo === 'crear' && nombreCreado !== '' && categoriaId !== '')
   const puedeRegistrar = codigoCompleto && productoListo && fecha !== ''
 
-  const registrar = (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!puedeRegistrar) return
-
-    // Solo maqueta: describe qué haría el backend en cada caso
-    let accion = 'Lote registrado.'
-    if (!codigoConocido && eleccion?.tipo === 'existente') {
-      accion = `Código añadido a «${productoElegido?.producto_nombre}» y lote registrado.`
-    } else if (!codigoConocido && eleccion?.tipo === 'nuevo') {
-      accion = `Producto «${nombreCreado}» creado con el código ${ean} y lote registrado.`
-    }
-    cambiarEan('') // limpia el formulario (y el mensaje anterior)
-    setFecha('')
-    setMensaje(accion)
-  }
+  
 
   return (
     <div className="pagina">
@@ -202,7 +257,7 @@ export default function RegistrarLotePage() {
                       <button
                         type="button"
                         className="opcion"
-                        onClick={() => setEleccion({ tipo: 'existente', producto_id: p.producto_id })}
+                        onClick={() => setEleccion({ tipo: 'asociar', producto_id: p.producto_id })}
                       >
                         {p.producto_nombre}
                       </button>
@@ -212,7 +267,7 @@ export default function RegistrarLotePage() {
                     <li>
                       <button type="button" className="opcion opcion--crear" onClick={() => {
                           setNombreNuevo(textoBusqueda) // parte de lo escrito, pero se podrá corregir
-                          setEleccion({ tipo: 'nuevo' })
+                          setEleccion({ tipo: 'crear' })
                         }}
                       >
                         <Plus size={18} aria-hidden />
@@ -225,7 +280,7 @@ export default function RegistrarLotePage() {
             ) : (
               <>
                 {/* Caso 3: se añade el código a un producto que ya existe */}
-                {eleccion.tipo === 'existente' && (
+                {eleccion.tipo === 'asociar' && (
                   <p className="producto-detectado">
                     <CircleCheck size={18} aria-hidden />
                     Se añadirá este código a «{productoElegido?.producto_nombre}»
@@ -233,7 +288,7 @@ export default function RegistrarLotePage() {
                 )}
 
                 {/* Caso 2: producto nuevo, hace falta la categoría */}
-                {eleccion.tipo === 'nuevo' && (
+                {eleccion.tipo === 'crear' && (
                   <>
                     <label htmlFor="nombre-nuevo">Nombre del producto nuevo</label>
                     <input
@@ -245,7 +300,7 @@ export default function RegistrarLotePage() {
                     <label htmlFor="categoria">Categoría</label>
                     <select id="categoria" value={categoriaId} onChange={(e) => setCategoriaId(e.target.value)}>
                       <option value="">Elige una categoría</option>
-                      {CATEGORIAS_EJEMPLO.map((c) => (
+                      {categorias.map((c) => (
                         <option key={c.categoria_id} value={c.categoria_id}>
                           {c.categoria_nombre}
                         </option>
@@ -282,7 +337,7 @@ export default function RegistrarLotePage() {
         <div className="formulario__dos">
           <div className="campo">
             <label htmlFor="cantidad">Unidades (opcional)</label>
-            <input id="cantidad" type="number" min="1" inputMode="numeric" defaultValue={1} />
+            <input id="cantidad" type="number" min="1" inputMode="numeric" value={cantidad} onChange={(e)=> setCantidad(Number(e.target.value))} />
             <small className="ayuda">Si no lo indicas, se registra 1.</small>
           </div>
           
@@ -293,28 +348,28 @@ export default function RegistrarLotePage() {
           </div> */}
         </div>
 
-        {mensaje && (
-          <p className="producto-detectado" role="status">
-            <CircleCheck size={18} aria-hidden />
-            {mensaje}
-          </p>
-        )}
+       {mensaje && (
+           mensaje[0] =='success' ? (
+            <p className="producto-detectado" role="status">
+              <CircleCheck size={18} aria-hidden />
+              {mensaje[1]}
+            </p>
+          ): mensaje[0] == 'error' && (
+            <p className="producto-detectado error" role="status">
+              <CircleX size={18} aria-hidden />
+              {mensaje[1]}
+            </p>
+        )
+      )}
 
         <button type="submit" className="boton boton--primario boton--grande" disabled={!puedeRegistrar}>
           <PackagePlus size={22} aria-hidden />
-          Registrar lote
+          {eleccion &&eleccion.tipo === 'crear' ? 'Registrar producto y lote' : "Registrar lote"}
         </button>
       </form>
 
-      {escaneando && (
-        <EscanerCodigo
-          onDetectar={(c) => {
-            cambiarEan(c)
-            setEscaneando(false)
-          }}
-          onCerrar={() => setEscaneando(false)}
-        />
-      )}
+      {escaneando && <EscanerCodigo onDetectar={cambiarEan} onCerrar={() => setEscaneando(false)} />}
+      
     </div>
   )
 }

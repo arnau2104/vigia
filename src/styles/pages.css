@@ -12,6 +12,22 @@
   font-size: 1.1rem;
 }
 
+#pagina-productos .cabecera-pagina {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.contenedor-botones {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 0.5rem;
+}
+
 /* Inicio */
 @media (min-width: 768px) {
   .contadores {
@@ -48,6 +64,13 @@
 }
 
 /* Registrar */
+/* Las páginas con formulario se centran enteras (cabecera + card), así el título queda siempre encima de la card */
+.pagina:has(> .formulario) {
+  width: 36rem;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
 .formulario {
   display: grid;
   gap: 1.25rem;
@@ -76,6 +99,15 @@
   gap: 0.4rem;
   font-weight: 600;
   color: var(--correcto);
+  animation: entrar 300ms ease-out both;
+}
+
+.producto-detectado.error {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 600;
+  color: #b42318;
   animation: entrar 300ms ease-out both;
 }
 

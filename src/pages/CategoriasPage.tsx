@@ -1,4 +1,4 @@
-import React, { useState,useEffect, use } from 'react'
+import React, { useState,useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus,Pencil } from 'lucide-react'
 import CabeceraPagina from '../components/CabeceraPagina'
@@ -30,6 +30,11 @@ export default function CategoriasPage() {
       setAccionInsert(false) // Si hay categoria_id, es un update
       setNombreCategoria(categorias.find(categoria => categoria.categoria_id == Number(categoria_id))?.categoria_nombre || '')
       setDias(categorias.find(categoria => categoria.categoria_id == Number(categoria_id))?.dias_aviso || 3)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }else {
+      setAccionInsert(true)
+      setNombreCategoria('')
+      setDias(3)
     }
   }, [categorias,categoria_id]);
 
@@ -166,7 +171,7 @@ export default function CategoriasPage() {
         <h2 id="todas" className="subtitulo">Todas las categorías ({categorias.length})</h2>
         <div className="categorias-grid">
           {categorias.map((categoria, i) => (
-            <CategoriaTarjeta key={categoria.categoria_id} categoria={categoria} indice={i} productos={productos} />
+            <CategoriaTarjeta key={categoria.categoria_id} categoria={categoria} indice={i} productos={productos} getCategorias={getCategorias} />
           ))}
         </div>
       </section>

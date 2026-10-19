@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#0f766e"/>
+  <!-- Ojo (vigía) -->
+  <path d="M84 256C140 168 200 132 256 132S372 168 428 256C372 344 312 380 256 380S140 344 84 256Z" fill="#ffffff"/>
+  <!-- Iris -->
+  <circle cx="256" cy="256" r="84" fill="#0f766e"/>
+  <!-- Manecillas de reloj (caducidad) -->
+  <path d="M256 202V256H296" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

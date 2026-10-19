@@ -17,7 +17,7 @@ export async function deshacerRetirar(lote_id: number): Promise<ResultadoDeshace
 
         const data = await res.json();
 
-        return {ok: res.ok && !data.error, lote: data.lote[0]}; // si las dos condiciones son verdaderas, devolvera true
+        return {ok: res.ok && !data.error, lote: data.lote}; // si las dos condiciones son verdaderas, devolvera true
 
     } catch (error) {
         console.error('Error al realizar la solicitud:', error);

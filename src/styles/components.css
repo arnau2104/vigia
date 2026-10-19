@@ -53,6 +53,11 @@
   font-size: 1.05rem;
 }
 
+.boton--borrar{
+  background-color: var(--caducado-fondo);
+  color: #b42318;
+}
+
 /* Insignias */
 .insignia {
   display: inline-flex;
@@ -293,6 +298,173 @@ select:focus-visible {
   color: var(--texto-suave);
 }
 
+.acciones {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.acciones div {
+  padding: 10px
+}
+
+.acciones .edit {
+  color: var(--proximo);
+
+}
+
+.acciones .delete {
+  color: var(--caducado);
+  background-color: transparent;
+  border: none;
+}
+
+.acciones .replenish {
+  color: var(--marca-fuerte);
+}
+
+/* Esqueletos de carga: mismas medidas que las tarjetas y filas reales */
+.esqueleto {
+  display: block;
+  height: 1rem;
+  background: linear-gradient(90deg, var(--borde) 25%, var(--fondo) 50%, var(--borde) 75%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: brillo 1.4s ease-in-out infinite;
+}
+
+.esqueleto--titulo {
+  width: 55%;
+  height: 1.15rem;
+}
+
+.esqueleto--linea {
+  width: 40%;
+  height: 0.9rem;
+}
+
+.esqueleto--texto {
+  height: 1rem;
+}
+
+.esqueleto--insignia {
+  width: 6rem;
+  height: 1.6rem;
+  border-radius: 999px;
+}
+
+.esqueleto--boton {
+  flex: 1;
+  height: var(--tactil);
+  border-radius: var(--radio-sm);
+}
+
+.esqueleto--icono {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 6px;
+}
+
+.lote--esqueleto {
+  pointer-events: none;
+}
+
+/* Paginación */
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.paginacion__info {
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.paginacion__botones {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.paginacion__pagina {
+  min-width: 7.5rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .paginacion {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .paginacion__info {
+    text-align: center;
+  }
+
+  /* En móvil: "Página X de Y" arriba y los dos botones debajo, mitad y mitad */
+  .paginacion__botones {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .paginacion__botones .boton {
+    flex: 1;
+  }
+
+  .paginacion__pagina {
+    order: -1;
+    flex: 1 0 100%;
+    min-width: 0;
+  }
+}
+
+.fila-esqueleto,
+.tabla tbody tr.fila-esqueleto:hover {
+  background: none;
+}
+
+@keyframes brillo {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulso-esqueleto {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* Con "reducir movimiento" no hay barrido: un pulso suave de opacidad indica que está cargando.
+   Lleva !important porque base.css fuerza duración 0.01ms a todas las animaciones en este modo. */
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto {
+    background: var(--borde);
+    animation-name: pulso-esqueleto !important;
+    animation-duration: 1.2s !important;
+    animation-delay: 0ms !important;
+  }
+}
+
+.title-add {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* Stepper de días de aviso */
 .stepper {
   display: flex;
@@ -462,6 +634,62 @@ select:focus-visible {
   color: var(--caducado);
 }
 
+.zona-csv__categorias {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio-sm);
+}
+
+.zona-csv__aviso {
+  margin: 0;
+  color: var(--texto-suave);
+  font-size: 0.9rem;
+}
+
+.zona-csv__resumen {
+  margin: 0;
+  font-weight: 600;
+}
+
+.zona-csv__categorias ul {
+  display: grid;
+  gap: 0.25rem;
+  max-height: 20rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.zona-csv__categoria {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: var(--tactil);
+  cursor: pointer;
+}
+
+.zona-csv__categoria input {
+  width: 1.2rem;
+  height: 1.2rem;
+  accent-color: var(--marca);
+}
+
+.zona-csv__categoria span {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zona-csv__categoria small {
+  color: var(--texto-suave);
+}
+
 .progreso {
   height: 8px;
   overflow: hidden;
@@ -475,6 +703,12 @@ select:focus-visible {
   background: var(--marca);
   border-radius: inherit;
   animation: llenar 1.8s ease-in-out forwards;
+}
+
+/* Barra con avance real (el ancho lo pone el componente) */
+.progreso--real span {
+  animation: none;
+  transition: width 200ms ease-out;
 }
 
 @keyframes llenar {
@@ -508,6 +742,49 @@ select:focus-visible {
   transition:
     transform var(--transicion),
     border-color var(--transicion);
+}
+
+.categoria {
+  overflow: hidden;
+}
+
+.categoria__acciones {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-self: stretch;
+  margin: -0.85rem 0 -0.85rem -1rem;
+  background: var(--marca-suave);
+  border-right: 1px solid var(--borde);
+}
+
+.categoria__accion {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  width: 2.75rem;
+  color: var(--marca-fuerte);
+  transition: background var(--transicion);
+}
+
+.accion_eliminar {
+  background-color: var(--caducado-fondo);
+   color: var(--caducado);
+   border: none;
+}
+
+.categoria__accion + .categoria__accion {
+  border-top: 1px solid var(--borde);
+}
+
+.categoria__accion:hover {
+  background: var(--marca);
+  color: #fff;
+}
+
+.accion_eliminar:hover {
+  background-color: var(--caducado);
+   color: var(--caducado-fondo);
 }
 
 .categoria:hover {
@@ -640,15 +917,7 @@ select:focus-visible {
   max-width: none;
 }
 
-.errorMsg {
-  color: #b42318;
-  font-weight: bold;
-}
 
-.successMsg {
-  color: #15803d;
-  font-weight: bold;
-}
 
 .tipo_codigo {
   color: var(--texto);
@@ -890,4 +1159,95 @@ select:focus-visible {
   .escaner__visor--ok {
     animation: none;
   }
+}
+
+
+.producto__acciones {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.producto__acciones a {
+  width: 100%;
+  flex: 1;
+}
+
+.producto__acciones .boton {
+  width: 100%;
+}
+/* Botón solo con icono (acciones de tabla) */
+.boton-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+/* Modal de confirmación */
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgb(20 32 43 / 0.45);
+}
+
+.modal {
+  position: relative;
+  width: min(100%, 24rem);
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--superficie);
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  text-align: center;
+}
+
+.modal h2 {
+  margin: 0;
+  padding-right: 2rem;
+  font-size: 1.1rem;
+}
+
+.modal p {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.modal__cerrar {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--texto-suave);
+  background: none;
+  border: 0;
+  border-radius: var(--radio-sm);
+  cursor: pointer;
+}
+
+.modal__cerrar:hover {
+  background: var(--fondo);
+}
+
+.errorMsg {
+  color: #b42318 !important;
+  font-weight: bold;
+}
+
+.successMsg {
+  color: #15803d;
+  font-weight: bold;
 }

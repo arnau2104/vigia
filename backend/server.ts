@@ -3,6 +3,13 @@ import cookieParser from 'cookie-parser';
 import { Querys } from './querys/querys.ts';
 import type { Request,Response } from 'express';
 
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const dist = path.resolve(__dirname, '../dist')
+
+
 
 const app = express();
 
@@ -13,6 +20,22 @@ declare global {
     interface Request { comercio_id: number; }
   }
 }
+
+// Archivos del frontend compilado
+app.use(express.static(dist, {
+  setHeaders: (res, archivo) => {
+    // 2. El service worker y el manifiesto se revalidan siempre
+    if (archivo.endsWith('sw.js') || archivo.endsWith('manifest.webmanifest')) {
+      res.setHeader('Cache-Control', 'no-cache')
+    }
+    // Los archivos con hash de Vite (carpeta assets) pueden cachearse un año
+    else if (archivo.includes(`${path.sep}assets${path.sep}`)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+    }
+  },
+}))
+
+
 const middleWareComercioId = (req: Request, res: Response, next: Function) => {
     // Middleware logic here
     req.comercio_id = 1; // Example: Set comercio_id to 1 for all requests
@@ -44,6 +67,22 @@ app.post('/api/getCategoriaIndivPage', Querys.getCategoriaIndivPage);
 app.get('/api/getProductosPage', Querys.getProductsPage);
 app.post('/api/codigoBarrasExiste', Querys.codigoBarrasExiste);
 app.get('/api/getProductosCodigos', Querys.getProductosCodigos);
+app.post('/api/crearLote', Querys.crearLote);
+app.post('/api/asociarLote', Querys.asociarLote);
+app.post('/api/crearProducto', Querys.crearProducto);
+app.post('/api/getProducto', Querys.getProducto);
+app.post('/api/getProductoCodigos', Querys.getProductoCodigos);
+app.post('/api/borrarCodigoBarras', Querys.borrarCodigoBarras);
+app.post('/api/editarProducto', Querys.editarProducto);
+app.post('/api/eliminarProducto', Querys.eliminarProducto);
+app.post('/api/eliminarCategoria', Querys.eliminarCategoria);
+app.post('/api/importarCategorias', Querys.importarCategorias);
+app.post('/api/importarProductos', Querys.importarProductos);
+
+// 1. Cualquier otra ruta (/productos, /categorias/editar/3…) devuelve index.html
+app.get('/{*splat}', (req, res) => {
+  res.sendFile(path.join(dist, 'index.html'))
+})
 
 
 app.listen(port, () => {

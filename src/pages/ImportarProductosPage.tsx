@@ -3,9 +3,9 @@ import CabeceraPagina from '../components/CabeceraPagina'
 import ZonaCsv from '../components/ZonaCsv'
 
 const columnas = [
-  { nombre: 'ean', obligatorio: true, descripcion: 'Código de barras de 8 a 13 dígitos', ejemplo: '8410000123456' },
-  { nombre: 'nombre', obligatorio: true, descripcion: 'Nombre del producto', ejemplo: 'Yogur natural pack 4' },
-  { nombre: 'categoria', obligatorio: true, descripcion: 'Categoría del producto; si no existe, se crea', ejemplo: 'Lácteos' },
+  { nombre: 'barcode', obligatorio: true, descripcion: 'Código de barras de 8 a 13 dígitos', ejemplo: '8410000123456' },
+  { nombre: 'productname', obligatorio: true, descripcion: 'Nombre del producto', ejemplo: 'Yogur natural pack 4' },
+  { nombre: 'family', obligatorio: true, descripcion: 'Categoría del producto; si no existe, se crea', ejemplo: 'Lácteos' },
 ]
 
 const plantilla = `${columnas.map((c) => c.nombre).join(',')}\n${columnas.map((c) => c.ejemplo).join(',')}\n`
