@@ -52,21 +52,21 @@ export default function LoteTarjeta({ producto,loteProducto, indice, ocultarAlRe
     
         <div className="lote__acciones producto__acciones">
             <Link to={`/productos/${producto.producto_id}/editar`} >
-              <button type="button" className="boton boton--primario">
-                <Pencil size={18} aria-hidden />
-                Editar
+              <button type="button" className="boton boton--primario" title="Editar">
+                <Pencil size={20} aria-hidden />
+                <span className="solo-lectores">Editar</span>
               </button>
             </Link>
              <Link to={`/reponer/${producto.producto_id}`} >
-              <button type="button" className="boton boton--secundario">
-                <PackageCheck size={18} aria-hidden />
-                Reponer
+              <button type="button" className="boton boton--secundario" title="Reponer">
+                <PackageCheck size={20} aria-hidden />
+                <span className="solo-lectores">Reponer</span>
               </button>
             </Link>
              <Link to={`/productos/${producto.producto_id}/eliminar`} >
-              <button type="button" className="boton boton--borrar">
-                <Trash size={18} aria-hidden />
-                Borrar
+              <button type="button" className="boton boton--borrar" title="Borrar">
+                <Trash size={20} aria-hidden />
+                <span className="solo-lectores">Borrar</span>
               </button>
             </Link>
             

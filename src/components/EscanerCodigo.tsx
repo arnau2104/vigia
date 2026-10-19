@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { CameraOff, Flashlight, FlashlightOff, X } from 'lucide-react'
 import { escanearCodigo } from '../utils/escanear'
 
@@ -66,7 +67,9 @@ export default function EscanerCodigo({ onDetectar, onCerrar }: Props) {
     }
   }
 
-  return (
+  // Se pinta en <body> con un portal: así ningún contenedor con animación o transform
+  // (como .pagina) puede romper el position: fixed y encoger o desplazar el escáner.
+  return createPortal(
     <div className="escaner" role="dialog" aria-modal="true" aria-label="Escanear código de barras">
       {/* playsInline + muted + autoPlay: necesarios para que el vídeo arranque en iOS */}
       <video ref={videoRef} className="escaner__video" playsInline muted autoPlay />
@@ -113,6 +116,7 @@ export default function EscanerCodigo({ onDetectar, onCerrar }: Props) {
           </button>
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   )
 }

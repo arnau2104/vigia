@@ -50,6 +50,9 @@
 
 .pagina {
   display: grid;
+  /* minmax(0, 1fr): la columna puede encogerse hasta el ancho de la pantalla.
+     Con "auto" crecía hasta el contenido mínimo (p. ej. la fila de botones) y se salía */
+  grid-template-columns: minmax(0, 1fr);
   gap: 1.25rem;
   animation: entrar 280ms ease-out both;
 }
