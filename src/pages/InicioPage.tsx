@@ -33,7 +33,7 @@ export default function InicioPage() {
   const avisos = lotes.filter(l => l.activo === 1 && tipoAviso(l) !== 'correcto')
   const urgentes = avisos.filter(l => ['caducado', 'hoy'].includes(tipoAviso(l)))
 
-  const lotesAvisar = [ ...urgentes,...avisos].sort((a : LoteView,b: LoteView) => {
+  const lotesAvisar = [...new Set<LoteView>([...urgentes,...avisos])].sort((a : LoteView,b: LoteView) => {
     return a.fecha_caducidad.localeCompare(b.fecha_caducidad)
   })
 
