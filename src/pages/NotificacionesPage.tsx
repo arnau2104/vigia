@@ -111,7 +111,7 @@ export default function AjustesPage() {
 
   return (
     <div className="pagina" id="pagina-ajustes">
-      <CabeceraPagina titulo="Ajustes" descripcion="Elige cómo y cuándo quieres recibir los avisos." />
+      <CabeceraPagina titulo="Notificaciones" descripcion="Elige cómo y cuándo quieres recibir los avisos." />
       <form  className="formularioNotificaion" onSubmit={(e)=> enviarForm(e)}>
         <section className="panel ajustes" aria-labelledby="ajustes-notificaciones">
           <h2 id="ajustes-notificaciones" className="subtitulo">Notificaciones</h2>

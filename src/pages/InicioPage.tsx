@@ -33,6 +33,10 @@ export default function InicioPage() {
   const avisos = lotes.filter(l => l.activo === 1 && tipoAviso(l) !== 'correcto')
   const urgentes = avisos.filter(l => ['caducado', 'hoy'].includes(tipoAviso(l)))
 
+  const lotesAvisar = [ ...urgentes,...avisos].sort((a : LoteView,b: LoteView) => {
+    return a.fecha_caducidad.localeCompare(b.fecha_caducidad)
+  })
+
   useEffect(() => {
     getDashboardData();
   }, []);
@@ -115,7 +119,7 @@ export default function InicioPage() {
       <section aria-labelledby="urgentes">
         <h2 id="urgentes" className="subtitulo">Lotes urgentes</h2>
         <div className="lista-lotes">
-          {urgentes.map((lote, i) => (
+          {lotesAvisar.map((lote, i) => (
             <LoteTarjeta
               key={lote.lote_id}
               lote={lote}
@@ -125,6 +129,7 @@ export default function InicioPage() {
               onDeshacerRetirar={deshacerRetirarHandler}
             />
           ))}
+           
         </div>
       </section>
       <section aria-labelledby="categorias">
